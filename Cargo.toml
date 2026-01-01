@@ -1,0 +1,12 @@
+[package]
+name = "rust_macro"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "*", features = ["full"] }
+quote = "*"
+proc-macro2 = "*"
