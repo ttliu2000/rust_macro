@@ -1,9 +1,5 @@
 use proc_macro::TokenStream;
 use syn::parse_macro_input;
-use syn::DeriveInput;
-use syn::Data;
-use syn::DataEnum;
-use quote::quote;
 
 /// Check if the attribute list contains a specific (skip) attribute
 pub (crate) fn has_skip_attr(attrs: &[syn::Attribute], att_name:&str, tag:&str) -> bool {
@@ -39,42 +35,12 @@ pub fn hello(attr: TokenStream, item: TokenStream) -> TokenStream {
     quote::quote!(#func).into()
 }
 
+mod is_variant;
+
 /// Derive macro to generate is_xxx methods for enum variants
-#[proc_macro_derive(GenIsEnumVariant)]
+#[proc_macro_derive(GenIsEnumVariant, attributes(is_variant))]
 pub fn is_enum_derive(input: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(input as DeriveInput);
-    let name = input.ident;
-
-    // Make sure it is an enum
-    let variants = if let Data::Enum(DataEnum { variants, .. }) = input.data {
-        variants
-    } else {
-        return syn::Error::new_spanned(name, "GenIsEnumVariant can only be applied to enums")
-            .to_compile_error()
-            .into();
-    };
-
-    // Generate is_xxx methods
-    let methods = variants.iter().map(|v| {
-        let vname = &v.ident;
-        let method_name = syn::Ident::new(
-            &format!("is_{}", vname.to_string().to_lowercase()),
-            vname.span(),
-        );
-        quote! {
-            pub fn #method_name(&self) -> bool {
-                matches!(self, #name::#vname)
-            }
-        }
-    });
-
-    let expanded = quote! {
-        impl #name {
-            #(#methods)*
-        }
-    };
-
-    TokenStream::from(expanded)
+    is_variant::expand(input)
 }
 
 mod getter_setter;

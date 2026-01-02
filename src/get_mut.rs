@@ -6,7 +6,7 @@ use syn::Visibility;
 use crate::has_skip_attr;
 
 
-pub fn expand(input: TokenStream) -> TokenStream {
+pub (crate) fn expand(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
 

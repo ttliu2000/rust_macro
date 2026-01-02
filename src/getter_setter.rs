@@ -5,7 +5,7 @@ use syn::{parse_macro_input, DeriveInput, Data};
 use crate::has_skip_attr;
 
 /// Derive macro to generate getter and setter methods for struct fields, excluding public fields
-pub fn expand(input: TokenStream) -> TokenStream {
+pub (crate) fn expand(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = input.ident;
 
