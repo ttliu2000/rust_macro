@@ -56,3 +56,10 @@ pub fn is_enum_derive(input: TokenStream) -> TokenStream {
 
     TokenStream::from(expanded)
 }
+
+mod getter_setter;
+
+#[proc_macro_derive(Accessors)]
+pub fn accessors(input: TokenStream) -> TokenStream {
+    getter_setter::expand(input)
+}
