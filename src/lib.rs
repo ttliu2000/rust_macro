@@ -5,6 +5,26 @@ use syn::Data;
 use syn::DataEnum;
 use quote::quote;
 
+/// Check if the attribute list contains a specific (skip) attribute
+pub (crate) fn has_skip_attr(attrs: &[syn::Attribute], att_name:&str, tag:&str) -> bool {
+    attrs.iter().any(|attr| {
+        if !attr.path().is_ident(att_name) {
+            return false;
+        }
+
+        let mut found = false;
+
+        let _ = attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident(tag) {
+                found = true;
+            }
+            Ok(())
+        });
+
+        found
+    })
+}
+
 /// Attribute macro to print "Hello from macro!" at the start of a function
 #[proc_macro_attribute]
 pub fn hello(attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -59,7 +79,14 @@ pub fn is_enum_derive(input: TokenStream) -> TokenStream {
 
 mod getter_setter;
 
-#[proc_macro_derive(Accessors)]
+#[proc_macro_derive(Accessors, attributes(getter, setter))]
 pub fn accessors(input: TokenStream) -> TokenStream {
     getter_setter::expand(input)
+}
+
+mod get_mut;
+
+#[proc_macro_derive(GetMut, attributes(get_mut))]
+pub fn get_mut(input: TokenStream) -> TokenStream {
+    get_mut::expand(input)
 }

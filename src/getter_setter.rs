@@ -2,6 +2,8 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, Data};
 
+use crate::has_skip_attr;
+
 /// Derive macro to generate getter and setter methods for struct fields, excluding public fields
 pub fn expand(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -43,7 +45,15 @@ pub fn expand(input: TokenStream) -> TokenStream {
             }
         };
 
-        Some(quote! { #getter #setter })
+        let skip_getter = has_skip_attr(&f.attrs, "getter", "skip");
+        let skip_setter = has_skip_attr(&f.attrs, "setter", "skip");
+
+        match (skip_getter, skip_setter) {
+            (true, true) => return None,
+            (true, false) => Some(quote! { #setter }),
+            (false, true) => Some(quote! { #getter }),
+            (false, false) => Some(quote! { #getter #setter }),
+        }
     });
 
     quote! {
