@@ -1,5 +1,5 @@
-use rust_macro::ini_file;
+use rust_macro::*;
 
 fn main() {
-    let _ = ini_file!("not_exists.ini");
+    let _ = ini2hash!("not_exists.ini");
 }

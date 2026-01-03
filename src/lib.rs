@@ -39,7 +39,7 @@ mod ini_file_macro;
 
 /// Attribute macro to include and parse an INI file at compile time
 #[proc_macro]
-pub fn ini_file(input: TokenStream) -> TokenStream {
+pub fn ini2hash(input: TokenStream) -> TokenStream {
     ini_file_macro::ini_file_impl(input)
 }
 

@@ -36,6 +36,8 @@ pub fn ini_file_impl(input: TokenStream) -> TokenStream {
     // 4. Parse INI (very simple parser)
     let mut inserts = Vec::new();
 
+    let mut keys = Vec::new();
+
     for (line_no, line) in content.lines().enumerate() {
         let line = line.trim();
         if line.is_empty() || line.starts_with('#') {
@@ -56,6 +58,18 @@ pub fn ini_file_impl(input: TokenStream) -> TokenStream {
 
         let key = k.trim().to_string();
         let value = v.trim().to_string();
+        
+        if keys.contains(&key) {
+            return syn::Error::new_spanned(
+                &path_lit,
+                format!("duplicate key '{}' at line {}", key, line_no + 1),
+            )
+            .to_compile_error()
+            .into();
+        }
+        else {
+            keys.push(key.clone());
+        }
 
         inserts.push(quote! {
             map.insert(#key.to_string(), #value.to_string());
