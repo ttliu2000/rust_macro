@@ -66,3 +66,17 @@ fn main() {
 }
 
 ```
+
+## ini file to hash
+
+this macro generate hashmap code from ini file. This macro also checks the duplicated key. if there is a duplication, there will be a compile time error.
+
+the usage sample is listed below.
+
+```rust
+use rust_macro::*;
+
+fn main() {
+    let _ = ini2hash!("ok.ini");
+}
+```
