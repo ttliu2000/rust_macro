@@ -35,6 +35,14 @@ pub fn hello(attr: TokenStream, item: TokenStream) -> TokenStream {
     quote::quote!(#func).into()
 }
 
+mod ini_file_macro;
+
+/// Attribute macro to include and parse an INI file at compile time
+#[proc_macro]
+pub fn ini_file(input: TokenStream) -> TokenStream {
+    ini_file_macro::ini_file_impl(input)
+}
+
 mod is_variant;
 
 /// Derive macro to generate is_xxx methods for enum variants
