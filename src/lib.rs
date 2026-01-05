@@ -36,6 +36,7 @@ pub fn hello(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 mod ini_file_macro;
+pub(crate) mod utils;
 
 /// Attribute macro to include and parse an INI file at compile time
 #[proc_macro]
