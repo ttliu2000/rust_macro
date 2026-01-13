@@ -65,3 +65,10 @@ mod get_mut;
 pub fn get_mut(input: TokenStream) -> TokenStream {
     get_mut::expand(input)
 }
+
+mod enum_accessor;
+
+#[proc_macro_derive(EnumAccessors)]
+pub fn enum_accessors(input: TokenStream) -> TokenStream {
+    enum_accessor::enum_accessors(input)
+}
