@@ -29,3 +29,23 @@ pub fn get_file_pathbuf(path_lit: &LitStr) -> Result<PathBuf, TokenStream> {
         Err(token)
     }
 }
+
+pub fn to_snake_case(ident: &syn::Ident) -> syn::Ident {
+    let s = ident.to_string();
+    let mut out = String::new();
+
+    for (i, ch) in s.chars().enumerate() {
+        if ch.is_uppercase() {
+            if i != 0 {
+                out.push('_');
+            }
+            for c in ch.to_lowercase() {
+                out.push(c);
+            }
+        } else {
+            out.push(ch);
+        }
+    }
+
+    syn::Ident::new(&out, ident.span())
+}

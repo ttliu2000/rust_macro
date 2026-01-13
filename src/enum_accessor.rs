@@ -1,6 +1,7 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, Data, DeriveInput, Fields};
+use crate::utils::*;
 
 
 pub fn enum_accessors(input: TokenStream) -> TokenStream {
@@ -30,7 +31,8 @@ pub fn enum_accessors(input: TokenStream) -> TokenStream {
                     .collect();
 
                 // ---------- immutable accessor
-                let method = format_ident!("get_{}", vname);
+                let snake = to_snake_case(&vname);
+                let method = format_ident!("get_{}", snake);
                 let ret = quote! { (#( &#tys ),*) };
 
                 methods.push(quote! {
@@ -44,7 +46,8 @@ pub fn enum_accessors(input: TokenStream) -> TokenStream {
                     }
                 });
 
-                let method = format_ident!("get_{}_mut", vname);
+                let snake = to_snake_case(&vname);
+                let method = format_ident!("get_{}_mut", snake);
                 let ret = quote! { (#( &mut #tys ),*) };
 
                 methods.push(quote! {
