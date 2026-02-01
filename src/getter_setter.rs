@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, Data};
 
-use crate::has_skip_attr;
+use crate::{has_skip_attr, utils::*};
 
 /// Derive macro to generate getter and setter methods for struct fields, excluding public fields
 pub (crate) fn expand(input: TokenStream) -> TokenStream {
@@ -27,14 +27,8 @@ pub (crate) fn expand(input: TokenStream) -> TokenStream {
         }
 
         let field = f.ident.as_ref()?;
-        let getter_name = syn::Ident::new(&format!("get_{}", field), field.span());
         let ty = &f.ty;
-
-        let getter = quote! {
-            pub fn #getter_name(&self) -> &#ty {
-                &self.#field
-            }
-        };
+        let getter = create_getters(& vec![(field.clone(), ty.clone())]);
 
         let setter_name =
             syn::Ident::new(&format!("set_{}", field), field.span());

@@ -4,6 +4,7 @@ use syn::{Data, DeriveInput, parse_macro_input};
 use syn::Visibility;
 
 use crate::has_skip_attr;
+use crate::utils::*;
 
 
 pub (crate) fn expand(input: TokenStream) -> TokenStream {
