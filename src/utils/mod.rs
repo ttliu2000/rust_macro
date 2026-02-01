@@ -113,6 +113,54 @@ pub fn option_t_to_option_ref_t(ty: &Type) -> Option<Type> {
     Some(Type::Path(new_tp))
 }
 
+pub fn option_t_to_option_mut_ref_t(ty: &Type) -> Option<Type> {
+    if !is_option(ty) {
+        return None;
+    }
+
+    let Type::Path(tp) = ty else { return None };
+
+    let last = tp.path.segments.last()?;
+    if last.ident != "Option" {
+        return None;
+    }
+
+    let PathArguments::AngleBracketed(args) = &last.arguments else {
+        return None;
+    };
+
+    let GenericArgument::Type(inner_ty) = args.args.first()? else {
+        return None;
+    };
+
+    // Build &mut T
+    let mut_ref_inner = Type::Reference(TypeReference {
+        and_token: Default::default(),
+        lifetime: None,
+        mutability: Some(Default::default()),
+        elem: Box::new(inner_ty.clone()),
+    });
+
+    // Rebuild Option<&mut T>
+    let mut new_tp = tp.clone();
+    let last_mut = new_tp.path.segments.last_mut().unwrap();
+
+    last_mut.arguments = PathArguments::AngleBracketed(
+        syn::AngleBracketedGenericArguments {
+            colon2_token: None,
+            lt_token: Default::default(),
+            args: {
+                let mut p = Punctuated::<GenericArgument, Comma>::new();
+                p.push(GenericArgument::Type(mut_ref_inner));
+                p
+            },
+            gt_token: Default::default(),
+        }
+    );
+
+    Some(Type::Path(new_tp))
+}
+
 fn accessor_tokens(s: &str) -> proc_macro2::TokenStream {
     s.parse().expect("invalid accessor syntax")
 }
@@ -120,6 +168,14 @@ fn accessor_tokens(s: &str) -> proc_macro2::TokenStream {
 fn convert_type(ty: &Type) -> (Option<Type>, Option<proc_macro2::TokenStream>) {
     if is_option(ty) {
         (option_t_to_option_ref_t(ty), Some(accessor_tokens("as_ref()")))
+    } else {
+        (None, None)
+    }
+}
+
+fn convert_type_mut(ty: &Type) -> (Option<Type>, Option<proc_macro2::TokenStream>) {
+    if is_option(ty) {
+        (option_t_to_option_mut_ref_t(ty), Some(accessor_tokens("as_mut()")))
     } else {
         (None, None)
     }
@@ -166,7 +222,7 @@ pub fn create_getters(fields:&Vec<(Ident, Type)>) -> proc_macro2::TokenStream {
 pub fn create_mut_getters(fields:&Vec<(Ident, Type)>) -> proc_macro2::TokenStream {
     let getters: Vec<_> = fields.iter().map(|(ident, ty)| {
         let getter_name = Ident::new(&format!("get_{}_mut", ident), Span::call_site());
-        match convert_type(ty) {
+        match convert_type_mut(ty) {
             (Some(ty0), Some(postfix)) => {
                 quote! {
                     pub fn #getter_name(&mut self) -> #ty0 {
@@ -177,14 +233,14 @@ pub fn create_mut_getters(fields:&Vec<(Ident, Type)>) -> proc_macro2::TokenStrea
             (Some(ty0), None) => {
                 quote! {
                     pub fn #getter_name(&mut self) -> &mut #ty0 {
-                        self.#ident
+                        &mut self.#ident
                     }
                 }
             }
             (None, _) => {
                 quote! {
                     pub fn #getter_name(&mut self) -> &mut #ty {
-                        self.#ident
+                        &mut self.#ident
                     }
                 }
             }

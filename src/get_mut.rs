@@ -30,14 +30,8 @@ pub (crate) fn expand(input: TokenStream) -> TokenStream {
         let field = f.ident.as_ref()?;
         let ty = &f.ty;
 
-        let fn_name =
-            syn::Ident::new(&format!("get_{}_mut", field), field.span());
-
-        Some(quote! {
-            pub fn #fn_name(&mut self) -> &mut #ty {
-                &mut self.#field
-            }
-        })
+        let r = create_mut_getters(&vec![(field.clone(), ty.clone())]);
+        Some(r)
     });
 
     quote! {
