@@ -72,3 +72,10 @@ mod enum_accessor;
 pub fn enum_accessors(input: TokenStream) -> TokenStream {
     enum_accessor::enum_accessors(input)
 }
+
+mod rerun_if_change;
+
+#[proc_macro]
+pub fn rerun_if_changed(input: TokenStream) -> TokenStream {
+    rerun_if_change::rerun_if_changed(input).into()
+}
