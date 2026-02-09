@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use syn::{GenericArgument, Ident, LitStr, PathArguments, Type, TypeReference, punctuated::Punctuated, token::Comma};
+use syn::{GenericArgument, Ident, LitStr, PathArguments, Type, TypePath, TypeReference, punctuated::Punctuated, token::Comma};
 use quote::quote;
 
 pub fn get_file_pathbuf(path_lit: &LitStr) -> Result<PathBuf, TokenStream> {
@@ -181,9 +181,32 @@ fn convert_type_mut(ty: &Type) -> (Option<Type>, Option<proc_macro2::TokenStream
     }
 }
 
+/// Check if a type is a primitive scalar type (e.g., i32, f64, bool, char).
+pub fn is_primitive_scalar(ty: &Type) -> bool {
+    match ty {
+        Type::Path(TypePath { qself: None, path }) => {
+            if path.segments.len() != 1 {
+                return false;
+            }
+
+            let ident = &path.segments[0].ident;
+            matches!(
+                ident.to_string().as_str(),
+                "i8" | "i16" | "i32" | "i64" | "i128" |
+                "u8" | "u16" | "u32" | "u64" | "u128" |
+                "isize" | "usize" |
+                "f32" | "f64" |
+                "bool" | "char"
+            )
+        }
+        _ => false,
+    }
+}
+
 pub fn create_getters(fields:&Vec<(Ident, Type)>) -> proc_macro2::TokenStream {
     let getters: Vec<_> = fields.iter().map(|(ident, ty)| {
         let getter_name = Ident::new(&format!("get_{}", ident), Span::call_site());
+        let is_primitive = is_primitive_scalar(ty);
         match convert_type(ty) {
             (Some(ty0), Some(postfix)) => {
                 quote! {
@@ -200,9 +223,17 @@ pub fn create_getters(fields:&Vec<(Ident, Type)>) -> proc_macro2::TokenStream {
                 }
             }
             (None, None) => {
-                quote! {
-                    pub fn #getter_name(&self) -> &#ty {
-                        &self.#ident
+                if is_primitive {
+                    quote! {
+                        pub fn #getter_name(&self) -> #ty {
+                            self.#ident
+                        }
+                    }
+                } else {
+                     quote! {
+                        pub fn #getter_name(&self) -> &#ty {
+                            &self.#ident
+                        }
                     }
                 }
             }
