@@ -275,11 +275,6 @@ pub fn create_mut_getters(fields:&Vec<(Ident, Type)>) -> proc_macro2::TokenStrea
                     }
                 }
             }
-            _ => {
-                quote! {
-                    compile_error!("unexpected conversion result from convert_type");
-                }
-            }
         }
     }).collect();
 
