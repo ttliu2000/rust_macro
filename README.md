@@ -1,8 +1,13 @@
 # rust_macro
 
-Rust macro project to make rust programming easier. Being a compiler engineer, I like generate code rather than writing code. :)
+A Rust macro project focused on improving ergonomics and reducing boilerplate through structured code generation.
 
-The following are macro list. For detailed usage sample, please refer to tests/ui. This folder contains tests cases which shows how these attributes are used.
+This crate provides the foundational abstractions and public interface that power the companion project `rust_macro_internal`, forming a layered macro infrastructure.
+
+## Available Macros
+
+The following macros are currently provided.  
+More may be added over time as the project evolves.
 
 ## hello marco
 
